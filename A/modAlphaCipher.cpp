@@ -1,5 +1,5 @@
 #include "modAlphaCipher.h"
-#include <cwctype> // Для функции iswprint
+#include <cwctype>
 
 modAlphaCipher::modAlphaCipher(const std::wstring& skey) {
     for (unsigned i = 0; i < numAlpha.size(); i++) {
@@ -10,22 +10,20 @@ modAlphaCipher::modAlphaCipher(const std::wstring& skey) {
 
 std::wstring modAlphaCipher::getValidKey(const std::wstring& s) {
     if (s.empty())
-        throw cipher_error(L"Пустой ключ");
+        throw std::invalid_argument(w_to_utf8(L"Пустой ключ"));
     
-    // Проверка на "слишком большой ключ"
     if (s.length() > MAX_KEY_LEN)
-        throw cipher_error(L"Слишком длинный ключ (максимум " + std::to_wstring(MAX_KEY_LEN) + L")");
+        throw std::invalid_argument(w_to_utf8(L"Слишком длинный ключ (максимум " + std::to_wstring(MAX_KEY_LEN) + L")"));
 
     std::wstring tmp(s);
     for (auto& c : tmp) {
-        // Проверка на непечатные символы
         if (!iswprint(c))
-            throw cipher_error(L"Непечатный символ в ключе");
+            throw std::invalid_argument(w_to_utf8(L"Непечатный символ в ключе"));
             
         if (c >= L'а' && c <= L'я') {
-            c = c - L'а' + L'А'; // Приведение к верхнему регистру
+            c = c - L'а' + L'А';
         } else if (c < L'А' || c > L'Я') {
-            throw cipher_error(L"Недопустимый символ в ключе");
+            throw std::invalid_argument(w_to_utf8(L"Недопустимый символ в ключе"));
         }
     }
     return tmp;
@@ -34,9 +32,8 @@ std::wstring modAlphaCipher::getValidKey(const std::wstring& s) {
 std::wstring modAlphaCipher::getValidOpenText(const std::wstring& s) {
     std::wstring tmp;
     for (auto c : s) {
-        // Проверка на непечатные символы
         if (!iswprint(c))
-            throw cipher_error(L"Непечатный символ в открытом тексте");
+            throw std::invalid_argument(w_to_utf8(L"Непечатный символ в открытом тексте"));
             
         if (c >= L'А' && c <= L'Я') {
             tmp.push_back(c);
@@ -45,21 +42,20 @@ std::wstring modAlphaCipher::getValidOpenText(const std::wstring& s) {
         }
     }
     if (tmp.empty())
-        throw cipher_error(L"Пустой открытый текст после очистки");
+        throw std::invalid_argument(w_to_utf8(L"Пустой открытый текст после очистки"));
     return tmp;
 }
 
 std::wstring modAlphaCipher::getValidCipherText(const std::wstring& s) {
     if (s.empty())
-        throw cipher_error(L"Пустой шифротекст");
+        throw std::invalid_argument(w_to_utf8(L"Пустой шифротекст"));
         
     for (auto c : s) {
-        // Проверка на непечатные символы
         if (!iswprint(c))
-            throw cipher_error(L"Непечатный символ в шифротексте");
+            throw std::invalid_argument(w_to_utf8(L"Непечатный символ в шифротексте"));
             
         if (c < L'А' || c > L'Я')
-            throw cipher_error(L"Недопустимый символ в шифротексте");
+            throw std::invalid_argument(w_to_utf8(L"Недопустимый символ в шифротексте"));
     }
     return s;
 }
